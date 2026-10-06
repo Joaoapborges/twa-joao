@@ -1,15 +1,22 @@
 import { items } from "./data.js";
 
 // console.log(items);
-
+/*
 function bycategory(list, cat){
     return list.filter(item => item.category === cat);
 };
+*/
+
+// com destructuring:
+
+export function byCategory(list, cat) {
+    return list.filter(({ category }) => category === cat);
+}
 
 // console.log(bycategory(items,'book'));
 
 
-function search(list, text) {
+export function search(list, text) {
     const query = text.toLowerCase();
     return list.filter(item => 
         (item.name && item.name.toLowerCase().includes(query)) || 
@@ -19,24 +26,23 @@ function search(list, text) {
 
 // console.log(search(items, 'javascript'));
 
-function total(list) {
+export function total(list) {
     return list.reduce((soma, item) => soma + item.price, 0);
 }
 
 // console.log(total(items));
 
 
-function top(list, n) {
-    // [...list] cria um novo array para não alterar o original com o .sort()
-    return [...list]
-        .sort((a, b) => b.price - a.price)
+export function top(list, n) {
+    return list
+        .toSorted(({ price: priceA }, { price: priceB }) => priceB - priceA)
         .slice(0, n);
 }
 
 
 // console.log(top(items, 4));
 
-function categories(list) {
+export function categories(list) {
     //  Set remove os duplicados e sort ordena alfabeticamente
     const categoriasUnicas = [...new Set(list.map(item => item.category))];
     return categoriasUnicas.sort();
@@ -46,7 +52,7 @@ function categories(list) {
 // console.log(categories(items));
 
 
-function withDiscount(list, pct) {
+export function withDiscount(list, pct) {
     return list.map(item => ({
         ...item,
         price: item.price * (1 - pct / 100)
