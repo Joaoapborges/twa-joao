@@ -9,133 +9,135 @@
       "classic"
     ],
     "author": {
-      "name": "R.Martin",
+      "name": "Robert C. Martin",
       "country": "US"
     }
   },
   {
     "id": 2,
-    "name": "The Pragmatic Programmer",
+    "name": "Eloquent JavaScript",
     "category": "book",
-    "price": 40,
+    "price": 29.9,
     "tags": [
-      "dev",
-      "programming"
+      "javascript",
+      "free-online"
     ],
     "author": {
-      "name": "D.Thomas",
-      "country": "US"
+      "name": "Marijn Haverbeke",
+      "country": "NL"
     }
   },
   {
     "id": 3,
-    "name": "JavaScript: The Good Parts",
+    "name": "You Don't Know JS Yet",
     "category": "book",
-    "price": 28.9,
+    "price": 24,
     "tags": [
       "javascript",
-      "classic"
+      "free-online"
     ],
     "author": {
-      "name": "D.Crockford",
+      "name": "Kyle Simpson",
       "country": "US"
     }
   },
   {
     "id": 4,
-    "name": "You DonÔÇÖt Know JS",
+    "name": "Designing Data-Intensive Applications",
     "category": "book",
-    "price": 25.5,
+    "price": 48,
     "tags": [
-      "javascript",
-      "dev"
+      "databases",
+      "architecture"
     ],
     "author": {
-      "name": "K.Simpson",
-      "country": "US"
-    }
-  },
-  {
-    "id": 5,
-    "name": "Refactoring",
-    "category": "book",
-    "price": 45,
-    "tags": [
-      "dev",
-      "classic"
-    ],
-    "author": {
-      "name": "M.Fowler",
+      "name": "Martin Kleppmann",
       "country": "UK"
     }
   },
   {
-    "id": 6,
-    "name": "Design Patterns",
-    "category": "book",
-    "price": 38.75,
+    "id": 5,
+    "name": "Baba Is You",
+    "category": "game",
+    "price": 14.99,
     "tags": [
-      "design",
-      "classic"
+      "puzzle",
+      "indie"
     ],
     "author": {
-      "name": "E.Gamma",
-      "country": "CH"
+      "name": "Hempuli",
+      "country": "FI"
     }
   },
   {
-    "id": 7,
-    "name": "Effective Java",
-    "category": "book",
-    "price": 42,
+    "id": 6,
+    "name": "Return of the Obra Dinn",
+    "category": "game",
+    "price": 19.99,
     "tags": [
-      "java",
-      "dev"
+      "puzzle",
+      "indie",
+      "mystery"
     ],
     "author": {
-      "name": "J.Bloch",
+      "name": "Lucas Pope",
       "country": "US"
     }
   },
   {
-    "id": 8,
-    "name": "Eloquent JavaScript",
-    "category": "book",
-    "price": 30,
+    "id": 7,
+    "name": "Mechanical keyboard, 65%",
+    "category": "tool",
+    "price": 89,
     "tags": [
-      "javascript",
-      "web"
+      "hardware",
+      "keyboard"
     ],
     "author": {
-      "name": "M.Haverbeke",
-      "country": "BE"
+      "name": "Keychron",
+      "country": "HK"
+    }
+  },
+  {
+    "id": 8,
+    "name": "USB-C hub, 7 ports",
+    "category": "tool",
+    "price": 35.5,
+    "tags": [
+      "hardware"
+    ],
+    "author": {
+      "name": "Anker",
+      "country": "CN"
     }
   },
   {
     "id": 9,
-    "name": "Domain-Driven Design",
+    "name": "The Pragmatic Programmer",
     "category": "book",
-    "price": 50,
+    "price": 39.9,
     "tags": [
-      "architecture",
-      "dev"
+      "dev",
+      "classic",
+      "career"
     ],
     "author": {
-      "name": "E.Evans",
+      "name": "Hunt & Thomas",
       "country": "US"
     }
   },
   {
     "id": 10,
-    "name": "Domain-Driven Design",
-    "category": "cars",
-    "price": 50,
+    "name": "Outer Wilds",
+    "category": "game",
+    "price": 24.99,
     "tags": [
-      "architecture",
-      "dev"
+      "exploration",
+      "indie",
+      "mystery"
     ],
     "author": {
-      "name": "E.Evans",
+      "name": "Mobius Digital",
       "country": "US"
     }
   }

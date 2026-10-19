@@ -1,184 +1,140 @@
+// main.js — o único ficheiro que toca no DOM e fala com a rede. · The only file that touches the DOM and the network.
+// Padrão render(state): os eventos só mudam o estado; uma função desenha a página a partir dele.
+// render(state) pattern: events only change the state; one function draws the page from it.
 import './style.css'
+import { byCategory, categories, search, sortByPrice } from './catalog.js'
 
+// --- state: tudo o que a página precisa para se desenhar · everything the page needs to draw itself
 const state = {
-  status: 'loading', error: null, items: [],
-  query: '', category: '', sortDir: 'desc',
+  status: 'loading', // 'loading' | 'error' | 'ready'
+  error: null,
+  items: [],
+  query: '',
+  category: '',
+  sortDir: 'desc',
   selectedId: null,
 }
 
-document.querySelector('#app').innerHTML = `
-  <div class="container">
-    <aside class="sidebar">
-      <div class="controls">
-        <input type="search" id="search" placeholder="Pesquisar...">
-        
-        <select id="category">
-          <option value="">Categorias</option>
+// --- DOM handles (static elements from index.html)
+const $ = (sel) => document.querySelector(sel)
+const q = $('#q')
+const categorySelect = $('#category')
+const sortButton = $('#sort')
+const status = $('#status')
+const list = $('#list')
+const detail = $('#detail')
 
+// helper: createElement + textContent — never innerHTML with data
+const el = (tag, text, attrs = {}) => {
+  const e = document.createElement(tag)
+  if (text !== undefined) e.textContent = text
+  Object.assign(e, attrs)
+  return e
+}
 
-        </select>
-        
-        <button id="sort-btn">Ordenar</button>
-      </div>
-
-      <ul id="list">
-
-
-      </ul>
-    </aside>
-
-    <section id="detail">
-
-      <!-- Os detalhes do item selecionado vão aparecer aqui -->
-
-      <p>Selecione um item para ver os detalhes.</p>
-
-    </section>
-  </div>
-`
-
-async function load(){
-  loading();
-
+// --- load(): fetch + the three states
+async function load(url = '/items.json') {
+  state.status = 'loading'
+  state.error = null
+  render()
   try {
-    
-    const resposta = await fetch('/items.json');
-
-    if(!resposta.ok) {
-      throw new Error (`Erro na rede: ${resposta.status}`)
-
-    }
-
-
-    const dados = await resposta.json();
-    console.log(dados);
-
-    
-    state.items = dados;
-    state.status = 'ready';
-
-    const categoriasUnicas = [];
-    for (const item of dados){
-
-      if (!categoriasUnicas.includes(item.category)){
-        categoriasUnicas.push(item.category)
-      }
-    }
-
-    // colocar cetegorias no select
-    const selectCategoria = document.querySelector('#category');
-    for (const cat of categoriasUnicas){
-      const option = document.createElement('option')
-      option.value = cat;
-      option.textContent = cat;
-      selectCategoria.appendChild(option);
-
-
-    }
-
-
-    render();
-
-
-
-  } catch (error) {
-    state.status = 'Error'
-    showError(error.message);
-    
-  }finally{
-    console.log('pedido terminou')
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`)
+    state.items = await res.json() // throws "Unexpected token '<'" if Vite answered with index.html
+    state.status = 'ready'
+    fillCategories() // once, after the data is known
+  } catch (err) {
+    state.status = 'error'
+    state.error = err.message
+  } finally {
+    render()
   }
 }
 
-function loading () {
-  document.querySelector('#list').innerHTML = '<p>A carregar dados...</p>';
+function fillCategories() {
+  categorySelect.replaceChildren(
+    el('option', 'All', { value: '' }),
+    ...categories(state.items).map((c) => el('option', c, { value: c })),
+  )
 }
 
-function showError(mensagem){
-  document.querySelector('#list').innerHTML=`<p style="color: red;">Erro: ${mensagem}</p>`
+// --- the visible items are a pure pipeline over the state
+function visibleItems() {
+  let items = search(state.items, state.query)
+  if (state.category) items = byCategory(items, state.category)
+  return sortByPrice(items, state.sortDir)
 }
+
+// --- render(): the ONE place that writes #status, #list and #detail
 function render() {
-  const ulElement = document.querySelector('#list');
-  ulElement.innerHTML = ''; // Limpa a lista atual
-
-  const itensFiltrados = [];
-  
-  for (const item of state.items) {
-    const passaPesquisa = item.name.toLowerCase().includes(state.query.toLowerCase());
-    const passaCategoria = state.category === '' || item.category === state.category;
-    
-    if (passaPesquisa && passaCategoria) {
-      itensFiltrados.push(item);
-    }
+  if (state.status === 'loading') {
+    status.textContent = 'Loading…'
+    list.replaceChildren()
+    detail.replaceChildren()
+    return
+  }
+  if (state.status === 'error') {
+    const retry = el('button', 'Retry', { type: 'button' }) // bonus C
+    retry.addEventListener('click', () => load())
+    status.replaceChildren(el('span', `Error: ${state.error} `), retry)
+    list.replaceChildren()
+    detail.replaceChildren()
+    return
   }
 
-  const itensOrdenados = sortByPrice(itensFiltrados, state.sortDir);
+  const items = visibleItems()
+  status.textContent = items.length
+    ? `${items.length} item${items.length === 1 ? '' : 's'}`
+    : `No results for "${state.query}"`
+  sortButton.textContent = state.sortDir === 'desc' ? 'Price ↓' : 'Price ↑'
 
-  for (const item of itensOrdenados) {
-    const liElement = document.createElement('li');
-    
-    liElement.textContent = `${item.name} (${item.price}€)`; // nnome e  preço
-    
-    ulElement.appendChild(liElement);
-  }
+  list.replaceChildren(...items.map(toLi))
+
+  const selected = state.items.find((i) => i.id === state.selectedId)
+  detail.replaceChildren(...(selected ? toDetail(selected) : []))
 }
 
-  
-const pesquisaInput = document.querySelector('#search');
-pesquisaInput.addEventListener('input', (evento)=>{
-
-  const textoEscrito = evento.target.value;
-
-  state.query = textoEscrito;
-
-  render();
-
-});
-
-
-const categorySelect = document.querySelector('#category')
-
-categorySelect.addEventListener('change',(evento)=>{
-
-  const select = evento.target.value;
-
-  state.category = select
-
-  render();
-
-})
-
-
-const btnSort = document.getElementById('sort-btn')
-
-btnSort.addEventListener('click', ()=>{
-
-
-  if (state.sortDir ==='desc'){
-    state.sortDir = 'asc';
-  }
-  else{
-    state.sortDir = 'desc'
-  }
-
-
-  render();
-})
-
-
-function sortByPrice(lista, dir) {
-  
-  const copia = [...lista];
-
-  copia.sort((a, b) => {
-    if (dir === 'asc') {
-      return a.price - b.price; // Do mais barato para o mais caro
-    } else {
-      return b.price - a.price; // Do mais caro para o mais barato
-    }
-  });
-
-  return copia;
+function toLi(item) {
+  const li = el('li', `${item.name} · ${item.price.toFixed(2)} €`)
+  li.dataset.id = item.id // string! Number(...) when reading it back
+  if (item.id === state.selectedId) li.classList.add('selected')
+  return li
 }
 
-load();
+function toDetail(item) {
+  const nested = Object.entries(item).find(([, v]) => v && typeof v === 'object' && !Array.isArray(v))
+  const dl = el('dl')
+  const row = (k, v) => dl.append(el('dt', k), el('dd', v))
+  row('Category', item.category)
+  row('Price', `${item.price.toFixed(2)} €`)
+  row('Tags', item.tags.join(', '))
+  if (nested) {
+    const [key, obj] = nested
+    Object.entries(obj).forEach(([k, v]) => row(`${key}.${k}`, String(v)))
+  }
+  return [el('h2', item.name), dl]
+}
+
+// --- events: change the state, then render. Never touch the DOM here.
+q.addEventListener('input', (e) => {
+  state.query = e.target.value
+  render()
+})
+categorySelect.addEventListener('change', (e) => {
+  state.category = e.target.value
+  render()
+})
+sortButton.addEventListener('click', () => {
+  state.sortDir = state.sortDir === 'desc' ? 'asc' : 'desc'
+  render()
+})
+// bonus B — event delegation: one listener on the <ul>, works for <li>s created later by render()
+list.addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]')
+  if (!li) return
+  state.selectedId = Number(li.dataset.id)
+  render()
+})
+$('#controls').addEventListener('submit', (e) => e.preventDefault()) // Enter in the search box must not reload
+
+load()
